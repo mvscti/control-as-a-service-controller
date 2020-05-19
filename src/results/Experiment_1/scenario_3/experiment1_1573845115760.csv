@@ -1,0 +1,26 @@
+controller;round;mobility;battery;memory_avaliable;signal_strentch;processing
+controller 33;1;100;90;79;2.0;90
+controller 97;211;100;99;99;4.0;90
+controller 33;230;100;90;80;3.0;90
+controller 97;330;100;99;81;9.0;90
+controller 84;344;100;70;79;15.0;90
+controller 97;366;100;99;79;13.0;90
+controller 84;378;100;70;90;18.0;90
+controller 97;392;100;99;86;12.0;90
+controller 33;414;100;90;82;7.0;90
+controller 84;424;100;70;64;18.0;90
+controller 97;433;100;99;81;13.0;90
+controller 84;466;100;70;59;17.0;90
+controller 97;467;100;99;81;11.0;90
+controller 9;469;100;88;41;18.0;90
+controller 33;474;100;90;80;8.0;90
+controller 97;507;100;99;90;13.0;90
+controller 33;535;100;90;82;9.0;90
+controller 97;552;100;99;51;20.0;90
+controller 33;685;100;90;80;11.0;90
+controller 25;721;100;85;81;14.0;90
+controller 97;741;100;99;83;18.0;90
+controller 25;793;100;85;77;14.0;90
+controller 33;813;100;90;87;11.0;90
+controller 97;826;100;99;85;18.0;90
+controller 33;869;100;90;80;17.0;90
