@@ -41,8 +41,11 @@ public class Node extends Thread implements Observable{
             this.batteryLevel=batteryLevelA;
             tBatterySendTie=this.batteryLevel;
             this.maxMemoryAvaliable=maxMemoryAvaliableA;
-            this.signalStrentch=signalStrentchA;
+            
             this.typeOfDevice=typeOfDeviceA;
+            this.distance=headOrTails.nextInt(50)+1;
+            this.oldDistance=distance;
+            this.signalStrentch=calculateSNR(oldDistance);
             changeMobility();
             currentMobilityValue=getMobilityValue();
             this.W1= w1A;
@@ -89,79 +92,13 @@ public class Node extends Thread implements Observable{
             }
     }
     
-    public Node(
-            Byte idA,
-            int memoryAvaliableA,
-            int mipsA,
-            int maxMemoryAvaliableA,
-            int batteryLevelA,
-            float signalStrentchA,
-            byte typeOfDeviceA,
-            double w1A, double w2A, double w3A, double w4A, double w5A,
-            int TLEVEL1, int TLEVEL2, int TLEVEL3, int TLEVEL4, int TLEVEL5,
-            int PLEVEL1, int PLEVEL2, int PLEVEL3, int PLEVEL4, int PLEVEL5,int PLEVEL6,int PLEVEL7,int PLEVEL8,
-            boolean experiment6Node){
-            this.ranks = new Hashtable<>();
-            this.id=idA;
-            this.mips=mipsA;
-            this.memoryAvaliable=memoryAvaliableA;
-            this.batteryLevel=batteryLevelA;
-            tBatterySendTie=this.batteryLevel;
-            this.maxMemoryAvaliable=maxMemoryAvaliableA;
-            this.signalStrentch=signalStrentchA;
-            this.typeOfDevice=typeOfDeviceA;
-            changeMobility();
-            currentMobilityValue=getMobilityValue();
-            this.W1= w1A;
-            this.W2=w2A;
-            this.W3=w3A;
-            this.W4=w4A;
-            this.W5=w5A;
-            
-            this.TLEVEL1=TLEVEL1;
-            this.TLEVEL2=TLEVEL2;
-            this.TLEVEL3=TLEVEL3;
-            this.TLEVEL4=TLEVEL4;
-            this.TLEVEL5=TLEVEL5;
-            
-            this.PLEVEL1=PLEVEL1;
-            this.PLEVEL2=PLEVEL2;
-            this.PLEVEL3=PLEVEL3;
-            this.PLEVEL4=PLEVEL4;
-            this.PLEVEL5=PLEVEL5;
-            this.PLEVEL6=PLEVEL6;
-            this.PLEVEL7=PLEVEL7;
-            this.PLEVEL8=PLEVEL8;
-            this.
-            calculateRank();
-            //Definindo probabilidade de variação de memória
-            switch(headOrTails.nextInt(3)){
-                case 1: this.probabilityOfMemoryConsumption="low";
-                break;
-                
-                case 2: this.probabilityOfMemoryConsumption="medium";
-                break;
-                
-                default: this.probabilityOfMemoryConsumption="high";
-            }
-            //Definindo probabilidade de variação de bateria
-            switch(headOrTails.nextInt(3)){
-                case 1: this.probabilityOfBatteryConsumption="low";
-                break;
-                
-                case 2: this.probabilityOfBatteryConsumption="medium";
-                break;
-                
-                default: this.probabilityOfBatteryConsumption="high";
-            }
-            experimen6NodeFlag=experiment6Node;
-    }
+   
     
     private final Byte id;
     private volatile double W1, W2, W3, W4, W5;
     private volatile int batteryLevel;
     private volatile boolean mobility=false;
-    private volatile boolean oldMobility=false;
+    private volatile float oldDistance;
     private volatile int currentMobilityValue;
     private volatile int nNodesLowBattery=0; //nós com bateria abaixo da média
     private volatile int nNodesWeakSignal=0; //nós com sinal baixo
@@ -196,7 +133,8 @@ public class Node extends Thread implements Observable{
     private volatile String probabilityOfMemoryConsumption;
     private volatile String probabilityOfBatteryConsumption;
     private volatile Map<Byte, Number[]> charactheristicsOfInterest=new ConcurrentHashMap<Byte, Number[]>(); //características de interesse dos nós
-    private volatile boolean experimen6NodeFlag=false;
+    //private volatile boolean experimen6NodeFlag=false;
+    private volatile float distance;
     static{
         typesOfConsumption.put("low", 40);
         typesOfConsumption.put("medium", 60);
@@ -290,10 +228,6 @@ public class Node extends Thread implements Observable{
             if (isController) releaseControllerRole();
             isHigherRank=false;
             tieFlag=false;
-            /*if (!isSendingCharactheristicsFlag){
-                Thread t=new NonControllerNodeThread();
-                t.start();
-            }*/
         }else if (received.startsWith("rank=")){
             String[] msg= received.split("=");
             if (msg.length>0){
@@ -310,10 +244,6 @@ public class Node extends Thread implements Observable{
             stopNode();
         }else if("controller".equals(this.received)){ //já existe um controlador
             isHigherRank=false; 
-            /*if (!isSendingCharactheristicsFlag){
-                Thread t=new NonControllerNodeThread();
-                t.start();
-            }*/
         }else if(received.startsWith("battery") && isHigherRank && tieFlag){ //nós candidatos a controlador empatados
             String[] msg= received.split("&");
             if (msg.length==2){
@@ -357,7 +287,8 @@ public class Node extends Thread implements Observable{
             //****MOBILIDADE E SNR
             changeMobility();
             if (Manager.getInstance().getCurrentRound()%5==0) {
-                oldMobility=mobility;
+                oldDistance-=distance;
+                if (oldDistance<0) oldDistance*=-1;
                 currentMobilityValue=getMobilityValue();
             }
             changeSNR();
@@ -528,32 +459,6 @@ public class Node extends Thread implements Observable{
         
     }
   
-    /**
-     * Envia as características de interesse para o controlador
-     */
-   /*public class NonControllerNodeThread extends Thread{
-         
-        @Override
-        public void run(){
-            isSendingCharactheristicsFlag=true;
-            while(!isController && getBatteryLevel()>10){
-                try {
-                    if (getBatteryLevel()>10){ //apenas nós com mais de 10% de sua capacidade podem ser candidatos
-                        unicast("mips="+mips+
-                            "&signal_strentch="+getSignalStrentch()+
-                            "&memory_avaliable="+Math.round(((float) memoryAvaliable/100)*maxMemoryAvaliable)+
-                            "&battery="+batteryLevel+
-                            "&mobility="+getMobilityValue()+
-                            "&id="+getNodeId());
-                        Thread.sleep(2000);
-                    }
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(Node.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-            isSendingCharactheristicsFlag=false;
-        }
-    }*/
     
     @Override
     public void sendCharactheristicsToController(){
@@ -880,75 +785,20 @@ public class Node extends Thread implements Observable{
     }
     
     /**
-     * Calcula a variação de SNR
+    * Modifica SNR de um nó
      */
     private void changeSNR(){
-        if (typeOfDevice<2){
-            //dispositivo com alta probabilidade de movimentação
-            if (typeOfDevice==0){
-                if (mobility){ 
-                    if (headOrTails.nextBoolean()){ //se aproximou do AP e melhora SNR (em até 3 unidades)
-                        int randomSNRValue=headOrTails.nextInt(3)+1;
-                        signalStrentch=(signalStrentch+ randomSNRValue<=20)? 
-                                signalStrentch+ randomSNRValue: signalStrentch;
-                    }else{ //se afastou do AP e piora seu SNR (em até 3 unidades)
-                        int randomSNRValue=headOrTails.nextInt(3)+1;
-                        signalStrentch=(signalStrentch- randomSNRValue<0)? 
-                                signalStrentch: signalStrentch - randomSNRValue;
-                    }
-                    //Experimento 6 (APAGAR)
-                    if (experimen6NodeFlag && signalStrentch==0) signalStrentch=headOrTails.nextInt(3)+1;
-                    else if (experimen6NodeFlag && signalStrentch==20) signalStrentch=23-(headOrTails.nextInt(3)+1);
-                }else{ //se estiver parado, 50% chance de manter atual SNR ou melhorar (em até 2 unidades)
-                    if (headOrTails.nextBoolean()){
-                        int randomSNRValue=headOrTails.nextInt(2);
-                        signalStrentch=(randomSNRValue+getSignalStrentch()<=20) ? 
-                           randomSNRValue+getSignalStrentch(): signalStrentch;
-                    }
-                }
-            }else{ 
-                if (mobility){
-                    if (headOrTails.nextBoolean()){ //se aproximou do AP e melhora SNR (em até 3 unidades)
-                        int valueIncrease=headOrTails.nextInt(3)+1;
-                        signalStrentch=(getSignalStrentch()+ valueIncrease<=20)? 
-                                getSignalStrentch()+ valueIncrease: getSignalStrentch();
-                    }else{ //se afastou do AP e piora seu SNR (em até 3 unidades)
-                        int randomSNRValue=headOrTails.nextInt(3)+1;
-                        signalStrentch=(getSignalStrentch()- randomSNRValue<0)? 
-                                signalStrentch: getSignalStrentch() - randomSNRValue;
-                    }
-                }else{ //se estiver parado, 50% chance de manter atual SNR ou melhorar (em até 2 unidades)
-                  if (headOrTails.nextBoolean()){
-                        int randomSNRValue=headOrTails.nextInt(2);
-                        signalStrentch=(randomSNRValue+getSignalStrentch()<=20) ? 
-                           randomSNRValue+getSignalStrentch(): getSignalStrentch();
-                    }
-                }
-            }
-        }else{ //dispostivo estacionado 
-            //40% de chance de alteração
-            if (mobility){
-                if (headOrTails.nextInt(10)<=3){
-                   int randomSNRValue=headOrTails.nextInt(2);
-                   //50% de chance de melhorar em até duas unidades
-                   if (headOrTails.nextBoolean() &&
-                           getSignalStrentch()+randomSNRValue<=20) //melhora SNR
-                       signalStrentch+=randomSNRValue;
-                   else if(getSignalStrentch()-randomSNRValue>=0) //piora SNR
-                       signalStrentch-=randomSNRValue;
-                }
-            }else{ //20% de chance de alteração
-                 if (headOrTails.nextInt(10)<=2){
-                   int randomSNRValue=headOrTails.nextInt(2);
-                   //50% de chance de melhorar em até duas unidades
-                   if (headOrTails.nextBoolean() &&
-                           getSignalStrentch()+randomSNRValue<=20) //melhora SNR
-                       signalStrentch+=randomSNRValue;
-                   else if(getSignalStrentch()-randomSNRValue>=0) //piora SNR
-                       signalStrentch-=randomSNRValue;
-                }
-            }
+        //se movimentou e se afastou/aproximou do ponto de acesso
+        if (mobility){
+            //se afastou do AP
+            if (headOrTails.nextBoolean())
+                distance+=headOrTails.nextFloat()*10;
+            else
+                distance-=headOrTails.nextFloat()*10;
         }
+        
+        if (Float.compare(distance, 0f)<0) distance=0.5f;    
+       calculateSNR();
     }
     
     
@@ -957,7 +807,7 @@ public class Node extends Thread implements Observable{
      */
     @Override
     public boolean isConnected() {
-        return (signalStrentch>0.0);
+        return (signalStrentch>=1);
     }
     
     @Override
@@ -971,7 +821,7 @@ public class Node extends Thread implements Observable{
      */
     @Override
     public float getSignalStrentch(){
-        return signalStrentch;
+        return (signalStrentch>0)? signalStrentch: 0f;
     }
     
     /**
@@ -989,34 +839,7 @@ public class Node extends Thread implements Observable{
      */
     @Override
     public int getMobilityValue(){
-        int mobilityValue=0;
-        boolean aMobility=(Manager.getInstance().getCurrentRound()%5==0)?this.mobility: this.oldMobility;
-        if (aMobility && typeOfDevice<2){
-            mobilityValue=headOrTails.nextInt(100)+1;
-            /*switch(headOrTails.nextInt(3)){
-                case 0: mobilityValue=70;
-                break;
-
-                case 1: mobilityValue=90;
-                break;
-
-                default: mobilityValue=100;
-
-            }*/
-        }else if(aMobility && typeOfDevice>2){
-            mobilityValue=headOrTails.nextInt(15)+1; 
-            /*switch(headOrTails.nextInt(3)){
-                case 0: mobilityValue=5;
-                break;
-
-                case 1: mobilityValue=10;
-                break;
-
-                default: mobilityValue=15;
-
-            }*/
-        }
-        return (100-mobilityValue);
+        return (min(100,100-(int) oldDistance));
     }
     
     @Override
@@ -1115,6 +938,21 @@ public class Node extends Thread implements Observable{
     public int getMips() {
         return mips;
     }
+    /**   
+	 * Calcula a variação de SNR de acordo com deslocamento
+	     * Referência: https://doi.org/10.1109/JPROC.2003.821910
+    */
+    private float calculateSNR(float distance){
+        double l=1;
+        double gama=2;
+        float snr=(float) (-41-(-108)-l-20*(Math.log10(4*Math.PI*2400000000d)
+        - Math.log10(300000000d))-(gama*10*Math.log10(distance)));
+        return snr;
+    }
     
+    public int min(int a, int b){
+        if (a<b) return a;
+        else return b;
+    }
     
 }

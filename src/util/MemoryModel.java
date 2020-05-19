@@ -15,8 +15,7 @@ import java.util.logging.Logger;
 /**
  *
  * @author MARCUS VINICIUS
- * Classe que gera valores utilizando a distibuição Gamma Inverso com
- * função PDF. Alfa=0.5 e Beta=10
+ * Obtém valores PDF de distibuição Gama com Alfa=0.5 e Beta=10
  */
 public final class MemoryModel {
     private static float[] memoryValues=new float[1000];    

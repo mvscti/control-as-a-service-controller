@@ -1,0 +1,11 @@
+controller;round;mobility;battery;memory_avaliable;signal_strentch;processing
+controller 40;1;75;97;57;7.5376277;75
+controller 36;3;95;95;61;21.517029;0
+controller 50;5;97;86;81;14.471173;75
+controller 69;15;99;94;53;3.2448015;100
+controller 16;17;97;81;86;18.04379;50
+controller 69;40;69;94;90;5.1271424;100
+controller 51;50;81;83;79;9.065328;100
+controller 69;70;96;94;84;4.2601604;100
+controller 16;88;97;78;86;24.646461;50
+controller 75;95;97;62;93;20.120895;75

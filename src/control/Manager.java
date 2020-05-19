@@ -43,20 +43,18 @@ public final class Manager {
     private static volatile LocalDateTime t1;
     private static volatile  String failureString; //armazena uma string com estatísticas de erro de um controlador
     private static volatile FileWriter experiment1, experiment2, experiment3, experiment4, experiment5Memory, experiment5Battery, experiment5Mobility, experiment5SignalStrentch, experiment;
-    private static volatile FileWriter experiment6Memory, experiment6Battery, experiment6Mobility, experiment6SignalStrentch;
-    private static volatile Number experiment6MemoryMCC, experiment6BatteryMCC, experiment6MobilityMCC, experiment6SignalStrentchMCC;
     private static volatile boolean startRequestsFlag=false; //flag que indica se a Thread do nó requisitante deve começar
-    private static volatile boolean sendCIToControllerMCCFlag=false; //flag que indica se um nó observado já enviou as características uma vez
+    //private static volatile boolean sendCIToControllerMCCFlag=false; //flag que indica se um nó observado já enviou as características uma vez
     private static volatile int counter=1; //contador de número de requisições
     private static volatile boolean simulationsDoneFlag=false; //flag que indica se as simulações foram completas
     private static volatile List<Observable> observablesNodes=new ArrayList<Observable>(); //lista de nós a se observar
-    private static volatile int experiment6RandomValue; //armazena a leitura aleatória em uma rodada para o experimento 6
-    private static volatile Observable experiment6Node=null; //nó a ser observado no experimento 6
+    //private static volatile int experiment6RandomValue; //armazena a leitura aleatória em uma rodada para o experimento 6
+    //private static volatile Observable experiment6Node=null; //nó a ser observado no experimento 6
     private static volatile Random randomValue=new Random();
     private Manager(){
         Date date=new Date();
         long docId=date.getTime();
-        experiment6RandomValue=randomValue.nextInt(10)+1;//sorteia a primeira rodada para ler uma CI
+        //experiment6RandomValue=randomValue.nextInt(10)+1;//sorteia a primeira rodada para ler uma CI
         try {
             experiment1=new FileWriter("src/results/Experiment_1/scenario_"+scenario+"/experiment1_"+docId+".csv",true );
             experiment2=new FileWriter("src/results/Experiment_2/scenario_"+scenario+"/experiment2_"+docId+".csv",true);
@@ -66,10 +64,10 @@ public final class Manager {
             experiment5Memory=new FileWriter("src/results/Experiment_5/memory/memory_"+docId+".csv",true);
             experiment5Mobility=new FileWriter("src/results/Experiment_5/mobility/mobility_"+docId+".csv",true);
             experiment5SignalStrentch=new FileWriter("src/results/Experiment_5/signal_strentch/signal_"+docId+".csv",true);
-            experiment6Battery=new FileWriter("src/results/Experiment_6/battery/battery_"+docId+".csv",true);
+            /*experiment6Battery=new FileWriter("src/results/Experiment_6/battery/battery_"+docId+".csv",true);
             experiment6Memory=new FileWriter("src/results/Experiment_6/memory/memory_"+docId+".csv",true);
             experiment6Mobility=new FileWriter("src/results/Experiment_6/mobility/mobility_"+docId+".csv",true);
-            experiment6SignalStrentch=new FileWriter("src/results/Experiment_6/signal_strentch/signal_"+docId+".csv",true);
+            experiment6SignalStrentch=new FileWriter("src/results/Experiment_6/signal_strentch/signal_"+docId+".csv",true);*/
             experiment1.write("controller;round;mobility;battery;memory_avaliable;signal_strentch;processing\n");
             experiment2.write("controller;cause;time_failure\n");
             experiment3.write("controller;battery;memory_avaliable;total_memory_avaliable\n");
@@ -78,10 +76,10 @@ public final class Manager {
             experiment5Memory.write("node 1;node 2;node 3;node 4;node 5\n");
             experiment5SignalStrentch.write("node 1;node 2;node 3;node 4;node 5\n");
             experiment5Mobility.write("node 1;node 2;node 3;node 4;node 5\n");
-            experiment6Battery.write("value;proposed_method;mcc\n");
+            /*experiment6Battery.write("value;proposed_method;mcc\n");
             experiment6Memory.write("value;proposed_method;mcc\n");
             experiment6SignalStrentch.write("value;proposed_method;mcc\n");
-            experiment6Mobility.write("value;proposed_method;mcc\n");
+            experiment6Mobility.write("value;proposed_method;mcc\n");*/
         } catch (IOException ex) {
             Logger.getLogger(Manager.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -282,7 +280,7 @@ public final class Manager {
                 ));
                 ++i;
         }
-        
+        /*
         //Nó que não pode ser controlador (experimento 6). Comentar se não deseja realizar este experimento
         while(tMips<mips_min){
             tMips=random.nextInt(mips_max)+1;
@@ -309,7 +307,7 @@ public final class Manager {
         );
         nodes.add(i, experiment6Node);
         ++i;
-        
+        */
         //Nós do tipo 3
         tMips=0; tBatteryLevel=0; tSignalStreentch=0;
         type=2;
@@ -339,7 +337,7 @@ public final class Manager {
                 ));
                 ++i;
         }
-         if (type1>=5){
+        if (type1>=5){
             observablesNodes.add(getNode((byte) 0));
             observablesNodes.add(getNode((byte) 1));
             observablesNodes.add(getNode((byte) 2));
@@ -467,6 +465,7 @@ public final class Manager {
             Thread t=new NonControllersNodesThread();
             t.start();
             while(counter<=requisitions){
+                
                 try {
                     if (controller!=null){
                         experiment3.append("controller "+controller.getNodeId()+";"
@@ -503,7 +502,7 @@ public final class Manager {
                         
                     }
                     
-                    Thread.sleep(2000);
+                    Thread.sleep(1000);
                     ++counter;
                 }catch (IOException ex) {
                     Logger.getLogger(Manager.class.getName()).log(Level.SEVERE, null, ex);
@@ -528,10 +527,10 @@ public final class Manager {
                 experiment5Memory.flush();
                 experiment5Mobility.flush();
                 experiment5SignalStrentch.flush();
-                experiment6Memory.flush();
+                /*experiment6Memory.flush();
                 experiment6Battery.flush();
                 experiment6SignalStrentch.flush();
-                experiment6Mobility.flush();
+                experiment6Mobility.flush();*/
                 experiment1.close();
                 experiment2.close();
                 experiment3.close();
@@ -540,10 +539,10 @@ public final class Manager {
                 experiment5Memory.close();
                 experiment5Mobility.close();
                 experiment5SignalStrentch.close();
-                experiment6Memory.close();
+                /*experiment6Memory.close();
                 experiment6Battery.close();
                 experiment6SignalStrentch.close();
-                experiment6Mobility.close();
+                experiment6Mobility.close();*/
                 System.out.println("Simulations were done");
                 System.exit(1);
             } catch (IOException ex) {
@@ -561,11 +560,11 @@ public final class Manager {
         public void run(){
             while(!simulationsDoneFlag){
                 try {
-                    sleep(1600);
+                    sleep(1000);
                     nodes.forEach((o) -> {
                         o.manageCharacteristics();
                     });
-                    String ciBatteryString="",ciMemoryString="",ciMobilityString="",ciSignalStrentchString="";
+                    /*String ciBatteryString="",ciMemoryString="",ciMobilityString="",ciSignalStrentchString="";
                     if (experiment6Node!=null){
                         ciBatteryString=experiment6Node.getBatteryLevel()+";";
                         ciMemoryString=experiment6Node.getAmountMemory()  +";";
@@ -591,13 +590,13 @@ public final class Manager {
                             Logger.getLogger(Manager.class.getName()).log(Level.SEVERE, null, ex);
                         }
                         
-                    }    
+                    }   
                     //sorteia a próxima rodada a ser testado o experimento 6
                     if (counter==experiment6RandomValue){
                         do{
                             experiment6RandomValue=getCurrentRound()+randomValue.nextInt(10)+1;
                         }while(experiment6RandomValue>requisitions);    
-                    }
+                    }*/
                 } catch (InterruptedException ex) {
                     Logger.getLogger(Manager.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -607,25 +606,16 @@ public final class Manager {
     public int getNodesNumber(){
         return n;
     }
+    
     private class NonControllersNodesThread extends Thread{
         @Override
         public void run(){
             while(!simulationsDoneFlag){
                 try {
                     sleep(1600);
-                    if (sendCIToControllerMCCFlag){
-                        nodes.forEach((o) -> {
-                            o.sendCharactheristicsToController();
-                        });
-                    }else{
-                        sendCIToControllerMCCFlag=!sendCIToControllerMCCFlag;
-                        if (experiment6Node!=null){
-                            experiment6MemoryMCC=experiment6Node.getAmountMemory();
-                            experiment6MobilityMCC=experiment6Node.getMobilityValue();
-                            experiment6BatteryMCC=experiment6Node.getBatteryLevel();
-                            experiment6SignalStrentchMCC=experiment6Node.getSignalStrentch();
-                        }
-                    }
+                    nodes.forEach((o) -> {
+                        o.sendCharactheristicsToController();
+                    });
                 } catch (InterruptedException ex) {
                     Logger.getLogger(Manager.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -637,7 +627,7 @@ public final class Manager {
     public int getCurrentRound(){
         return counter;
     }
-    //APAGAR
+
     public void addNode(Observable node){
         nodes.add(node);
     }
